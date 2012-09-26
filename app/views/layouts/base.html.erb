@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title><%=h html_title %></title>
+<meta name="description" content="<%= Redmine::Info.app_name %>" />
+<meta name="keywords" content="issue,bug,tracker" />
+<meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE" />
+<%= csrf_meta_tag %>
+<%= favicon %>
+<%= stylesheet_link_tag 'application', :media => 'all' %>
+<%= stylesheet_link_tag 'rtl', :media => 'all' if l(:direction) == 'rtl' %>
+<%= javascript_heads %>
+<%= heads_for_theme %>
+<!--[if IE 6]>
+<style type="text/css">
+* html body{ width: expression( document.documentElement.clientWidth < 900 ? '900px' : '100%' ); }
+body {behavior: url(<%= stylesheet_path "csshover.htc" %>);}
+</style>
+<![endif]-->
+<%= call_hook :view_layouts_base_html_head %>
+<!-- page specific tags -->
+<%= yield :header_tags -%>
+</head>
+<body class="<%=h body_css_classes %>">
+
+<div id="wrapper">
+<div id="wrapper2"   >
+<div id="top-menu"  >
+   <div id ="test">
+
+			<ul>
+				<b><li id="text">Time: </li>
+				<li id="hours"> </li>
+				<li id="point">:</li>
+				<li id="min"> </li>
+				<li id="point">:</li>
+				<li id="sec"> </li></b>
+			</ul>
+	</div>
+    <div id="account">
+		
+        <%= render_menu :account_menu -%>
+    </div>
+    <%= render_menu :top_menu if User.current.logged? || !Setting.login_required? -%>
+
+</div>
+
+<div id="header">
+	 <%= content_tag('div', "#{l(:label_logged_as)} #{link_to_user(User.current, :format => :username)}".html_safe, :id => 'loggedas') if User.current.logged? %>
+    <% if User.current.logged? || !Setting.login_required? %>
+    <div id="quick-search">
+        <%= form_tag({:controller => 'search', :action => 'index', :id => @project}, :method => :get ) do %>
+        <%= hidden_field_tag(controller.default_search_scope, 1, :id => nil) if controller.default_search_scope %>
+        <label for='q'>
+          <%= link_to l(:label_search), {:controller => 'search', :action => 'index', :id => @project}, :accesskey => accesskey(:search) %>:
+        </label>
+        <%= text_field_tag 'q', @question, :size => 20, :class => 'small', :accesskey => accesskey(:quick_search) %>
+        <% end %>
+        <%= render_project_jump_box %>
+    </div>
+    <% end %>
+
+    <h1><%= page_header_title %></h1>
+
+    <% if display_main_menu?(@project) %>
+    <div id="main-menu">
+
+        <%= render_main_menu(@project) %>
+    </div>
+    <% end %>
+</div>
+
+<%= tag('div', {:id => 'main', :class => (sidebar_content? ? '' : 'nosidebar')}, true) %>
+    <div id="sidebar">
+        <%= yield :sidebar %>
+        <%= view_layouts_base_sidebar_hook_response %>
+    </div>
+
+    <div id="content">
+        <%= render_flash_messages %>
+<% if User.current.logged?%>
+<% if request.referer == "http://localhost:3000/login" %>
+<%else%>
+<div id = "recentback">
+<%= link_to "<< back to previous page" , request.referer %><br/>
+</div>
+<%end%>
+<%end%>
+        <%= yield %>
+        <%= call_hook :view_layouts_base_content %>
+        <div style="clear:both;"></div>
+    </div>
+</div>
+
+<div id="ajax-indicator" style="display:none;"><span><%= l(:label_loading) %></span></div>
+<div id="ajax-modal" style="display:none;"></div>
+
+<div id="footer">
+  <div class="bgl">
+		<a href="http://logicmatter.com">Logicmatter	 </a> 
+	</div>
+</div>
+</div>
+<%= call_hook :view_layouts_base_body_bottom %>
+
+</body>
+</html>
+<style type="text/css">
+
+
+#point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite; padding-left:2px; padding-right:2px; }
+#test{ float: right; height: 30px; position: relative; right: 41%; width: 17%;z-index: 229;}
+@-webkit-keyframes mymove 
+{
+0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
+50% {opacity:0; text-shadow:none; }
+100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
+}
+
+
+@-moz-keyframes mymove 
+{
+0% {opacity:1.0; text-shadow:0 0 20px #00c6ff;}
+50% {opacity:0; text-shadow:none; }
+100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
+}
+
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+// Create a newDate() object
+var newDate = new Date();
+// Extract the current date from Date obje
+setInterval( function() {
+	// Create a newDate() object and extract the seconds of the current time on the visitor's
+	var seconds = new Date().getSeconds();
+	// Add a leading zero to seconds value
+	$("#sec").html(( seconds < 10 ? "0" : "" ) + seconds);
+	},1000);
+	
+setInterval( function() {
+	// Create a newDate() object and extract the minutes of the current time on the visitor's
+	var minutes = new Date().getMinutes();
+	// Add a leading zero to the minutes value
+	$("#min").html(( minutes < 10 ? "0" : "" ) + minutes);
+    },1000);
+	
+setInterval( function() {
+	// Create a newDate() object and extract the hours of the current time on the visitor's
+	var hours = new Date().getHours();
+	// Add a leading zero to the hours value
+	$("#hours").html(( hours < 10 ? "0" : "" ) + hours);
+    }, 1000);
+	
+}); 
+</script>
+<style>
+#recentback
+{
+	background-color: #E6E6E6;
+	background-repeat: repeat-x;
+	border-bottom: 1px solid #CCCCCC;
+	border-radius: 5px 5px 0 0;
+	color: #000000;
+	margin-bottom: 5px;
+	margin-left: -10px;
+	margin-right: -9px;
+	padding: 10px 15px;
+	position: relative;
+	top: -6px;
+}
+#loggedas
+{
+    float: right;
+    position: relative;
+    right: 15px;
+    top: 117%;
+    color: #CCCCCC;
+}
+ #sidebar:a:link, a:visited{color: #CCCCCC;}
+
+</style>
